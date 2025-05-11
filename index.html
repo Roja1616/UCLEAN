@@ -4,26 +4,191 @@
   <meta charset="UTF-8">
   <title>URL Cleaner</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 30px; }
-    input, textarea, button { font-size: 16px; margin-top: 10px; width: 100%; }
-    textarea { height: 100px; }
-    .result { margin-top: 20px; font-weight: bold; color: green; }
-    .error { color: red; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      background-color: #f5f6fa;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      background-color: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 600px;
+    }
+
+    h2 {
+      color: #2c3e50;
+      margin-bottom: 1.5rem;
+      text-align: center;
+      font-size: 2rem;
+    }
+
+    .input-container {
+      position: relative;
+      margin-bottom: 1rem;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      padding-right: 40px;
+      border: 2px solid #e2e8f0;
+      border-radius: 6px;
+      font-size: 1rem;
+      transition: border-color 0.3s ease;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #3498db;
+    }
+
+    .clear-button {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #999;
+      cursor: pointer;
+      padding: 5px;
+      width: auto;
+    }
+
+    .clear-button:hover {
+      color: #666;
+    }
+
+    button {
+      background-color: #3498db;
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      width: 100%;
+      font-size: 1rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #2980b9;
+    }
+
+    button:disabled {
+      background-color: #bdc3c7;
+      cursor: not-allowed;
+    }
+
+    .result {
+      margin-top: 1.5rem;
+      padding: 1rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+    }
+
+    .success {
+      background-color: #e8f5e9;
+      color: #2e7d32;
+      border: 1px solid #a5d6a7;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .error {
+      background-color: #ffebee;
+      color: #c62828;
+      border: 1px solid #ffcdd2;
+    }
+
+    .loading {
+      position: relative;
+      opacity: 0.7;
+    }
+
+    .loading::after {
+      content: '...';
+      animation: loading 1s infinite;
+    }
+
+    @keyframes loading {
+      0% { content: '.'; }
+      33% { content: '..'; }
+      66% { content: '...'; }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
   </style>
 </head>
 <body>
-  <h2>Multi-Site URL Cleaner</h2>
-  <label for="url">Paste the URL:</label>
-  <input type="text" id="url" placeholder="Paste your URL here...">
-  <button onclick="cleanURL()">Clean URL</button>
-  <div class="result" id="result"></div>
+  <div class="container">
+    <h2>URL Cleaner</h2>
+    <div class="input-container">
+      <input type="text" id="url" placeholder="Paste your URL here...">
+      <button class="clear-button" onclick="clearInput()">✕</button>
+    </div>
+    <button id="cleanButton" onclick="cleanURL()">Clean URL</button>
+    <div class="result" id="result"></div>
+  </div>
+
   <script>
-    function cleanURL() {
-      const rawURL = document.getElementById("url").value.trim();
+    const urlInput = document.getElementById('url');
+    const cleanButton = document.getElementById('cleanButton');
+    const resultDiv = document.getElementById('result');
+
+    // Add keyboard support
+    urlInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        cleanURL();
+      }
+    });
+
+    // Enable/disable button based on input
+    urlInput.addEventListener('input', function() {
+      cleanButton.disabled = !this.value.trim();
+    });
+
+    function clearInput() {
+      urlInput.value = '';
+      resultDiv.innerHTML = '';
+      resultDiv.className = 'result';
+      cleanButton.disabled = true;
+    }
+
+    async function cleanURL() {
+      const rawURL = urlInput.value.trim();
       let cleaned = rawURL;
-      const resultDiv = document.getElementById("result");
+      
+      // Show loading state
+      cleanButton.disabled = true;
+      resultDiv.className = 'result';
+      resultDiv.innerHTML = 'Cleaning URL';
+      resultDiv.classList.add('loading');
+
       try {
         const url = new URL(rawURL);
+        
+        // Simulate some processing time
+        await new Promise(resolve => setTimeout(resolve, 500));
+
         if (url.hostname.includes("google.com")) {
           cleaned = rawURL.split("&")[0];
         } else if (url.hostname.includes("rakuten.co.jp")) {
@@ -31,14 +196,28 @@
         } else if (url.hostname.includes("vitalsource.com")) {
           cleaned = rawURL.split("?")[0];
         } else {
-          resultDiv.innerHTML = `<span class="error">Unsupported URL format.</span>`;
-          return;
+          throw new Error("Unsupported URL format");
         }
-        resultDiv.innerHTML = "Cleaned URL: " + cleaned;
+        
+        // Copy to clipboard
+        await navigator.clipboard.writeText(cleaned);
+        resultDiv.classList.remove('loading');
+        resultDiv.className = 'result success';
+        resultDiv.innerHTML = "✓ Cleaned URL copied to clipboard:<br>" + cleaned;
+
       } catch (e) {
-        resultDiv.innerHTML = `<span class="error">Invalid URL.</span>`;
+        resultDiv.classList.remove('loading');
+        resultDiv.className = 'result error';
+        resultDiv.innerHTML = e.message === "Unsupported URL format" 
+          ? "Unsupported URL format."
+          : "Invalid URL.";
       }
+
+      cleanButton.disabled = !rawURL;
     }
+
+    // Initial button state
+    cleanButton.disabled = true;
   </script>
 </body>
 </html>
