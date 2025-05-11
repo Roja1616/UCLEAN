@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>URL Cleaner</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 30px; }
+    input, textarea, button { font-size: 16px; margin-top: 10px; width: 100%; }
+    textarea { height: 100px; }
+    .result { margin-top: 20px; font-weight: bold; color: green; }
+    .error { color: red; }
+  </style>
+</head>
+<body>
+  <h2>Multi-Site URL Cleaner</h2>
+  <label for="url">Paste the URL:</label>
+  <input type="text" id="url" placeholder="Paste your URL here...">
+  <button onclick="cleanURL()">Clean URL</button>
+  <div class="result" id="result"></div>
+  <script>
+    function cleanURL() {
+      const rawURL = document.getElementById("url").value.trim();
+      let cleaned = rawURL;
+      const resultDiv = document.getElementById("result");
+      try {
+        const url = new URL(rawURL);
+        if (url.hostname.includes("google.com")) {
+          cleaned = rawURL.split("&")[0];
+        } else if (url.hostname.includes("rakuten.co.jp")) {
+          cleaned = rawURL.split("?")[0];
+        } else if (url.hostname.includes("vitalsource.com")) {
+          cleaned = rawURL.split("?")[0];
+        } else {
+          resultDiv.innerHTML = `<span class="error">Unsupported URL format.</span>`;
+          return;
+        }
+        resultDiv.innerHTML = "Cleaned URL: " + cleaned;
+      } catch (e) {
+        resultDiv.innerHTML = `<span class="error">Invalid URL.</span>`;
+      }
+    }
+  </script>
+</body>
+</html>
