@@ -11,9 +11,9 @@
     }
 
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
       line-height: 1.6;
-      background-color: #f5f6fa;
+      background-color: #f8f9fc;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -23,18 +23,19 @@
 
     .container {
       background-color: white;
-      padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      padding: 3rem;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
       width: 100%;
-      max-width: 600px;
+      max-width: 700px;
     }
 
     h2 {
-      color: #2c3e50;
-      margin-bottom: 1.5rem;
+      color: #2d3748;
+      margin-bottom: 2rem;
       text-align: center;
-      font-size: 2rem;
+      font-size: 2.5rem;
+      font-weight: 600;
     }
 
     .input-container {
@@ -44,42 +45,47 @@
 
     input {
       width: 100%;
-      padding: 12px;
-      padding-right: 40px;
+      padding: 1rem;
       border: 2px solid #e2e8f0;
-      border-radius: 6px;
+      border-radius: 10px;
       font-size: 1rem;
-      transition: border-color 0.3s ease;
+      transition: all 0.3s ease;
+      color: #4a5568;
     }
 
     input:focus {
       outline: none;
-      border-color: #3498db;
+      border-color: #4299e1;
+      box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+    }
+
+    input::placeholder {
+      color: #a0aec0;
     }
 
     .clear-button {
       position: absolute;
-      right: 10px;
+      right: 12px;
       top: 50%;
       transform: translateY(-50%);
       background: none;
       border: none;
-      color: #999;
+      color: #cbd5e0;
       cursor: pointer;
       padding: 5px;
-      width: auto;
+      font-size: 1.2rem;
     }
 
     .clear-button:hover {
-      color: #666;
+      color: #a0aec0;
     }
 
-    button {
-      background-color: #3498db;
+    button#cleanButton {
+      background-color: #cbd5e0;
       color: white;
-      padding: 12px 24px;
+      padding: 1rem;
       border: none;
-      border-radius: 6px;
+      border-radius: 10px;
       cursor: pointer;
       width: 100%;
       font-size: 1rem;
@@ -87,33 +93,46 @@
       transition: all 0.3s ease;
     }
 
-    button:hover {
-      background-color: #2980b9;
+    button#cleanButton:not(:disabled) {
+      background-color: #4299e1;
     }
 
-    button:disabled {
-      background-color: #bdc3c7;
+    button#cleanButton:not(:disabled):hover {
+      background-color: #3182ce;
+    }
+
+    button#cleanButton:disabled {
       cursor: not-allowed;
     }
 
     .result {
       margin-top: 1.5rem;
       padding: 1rem;
-      border-radius: 6px;
-      font-size: 0.9rem;
+      border-radius: 10px;
+      font-size: 0.95rem;
     }
 
     .success {
-      background-color: #e8f5e9;
-      color: #2e7d32;
-      border: 1px solid #a5d6a7;
-      animation: fadeIn 0.3s ease-in-out;
+      background-color: #ebf8ff;
+      color: #2c5282;
+      border: 1px solid #bee3f8;
     }
 
     .error {
-      background-color: #ffebee;
-      color: #c62828;
-      border: 1px solid #ffcdd2;
+      background-color: #fff5f5;
+      color: #c53030;
+      border: 1px solid #fed7d7;
+    }
+
+    .reminder {
+      margin-top: 2rem;
+      padding: 1rem;
+      color: #dc3545;
+      font-size: 0.9rem;
+      background-color: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-radius: 10px;
+      line-height: 1.5;
     }
 
     .loading {
@@ -131,11 +150,6 @@
       33% { content: '..'; }
       66% { content: '...'; }
     }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
   </style>
 </head>
 <body>
@@ -147,6 +161,9 @@
     </div>
     <button id="cleanButton" onclick="cleanURL()">Clean URL</button>
     <div class="result" id="result"></div>
+    <div class="reminder">
+      ⚠️ Reminder: Use this tool only to clean URLs as per SOP "Books / Tool / Spark ( Publishing - Books / Tools)". Double-check that you've pasted the correct URL before proceeding.
+    </div>
   </div>
 
   <script>
@@ -154,14 +171,12 @@
     const cleanButton = document.getElementById('cleanButton');
     const resultDiv = document.getElementById('result');
 
-    // Add keyboard support
     urlInput.addEventListener('keypress', function(e) {
       if (e.key === 'Enter') {
         cleanURL();
       }
     });
 
-    // Enable/disable button based on input
     urlInput.addEventListener('input', function() {
       cleanButton.disabled = !this.value.trim();
     });
@@ -177,7 +192,6 @@
       const rawURL = urlInput.value.trim();
       let cleaned = rawURL;
       
-      // Show loading state
       cleanButton.disabled = true;
       resultDiv.className = 'result';
       resultDiv.innerHTML = 'Cleaning URL';
@@ -186,7 +200,6 @@
       try {
         const url = new URL(rawURL);
         
-        // Simulate some processing time
         await new Promise(resolve => setTimeout(resolve, 500));
 
         if (url.hostname.includes("google.com")) {
@@ -195,11 +208,12 @@
           cleaned = rawURL.split("?")[0];
         } else if (url.hostname.includes("vitalsource.com")) {
           cleaned = rawURL.split("?")[0];
+        } else if (url.hostname.includes("books.apple")) {
+          cleaned = rawURL;
         } else {
           throw new Error("Unsupported URL format");
         }
         
-        // Copy to clipboard
         await navigator.clipboard.writeText(cleaned);
         resultDiv.classList.remove('loading');
         resultDiv.className = 'result success';
@@ -216,7 +230,6 @@
       cleanButton.disabled = !rawURL;
     }
 
-    // Initial button state
     cleanButton.disabled = true;
   </script>
 </body>
